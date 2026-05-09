@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ResumeIQ — AI Career Coach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #6affb4;
+      --accent2: #ff6a6a;
+      --accent3: #6ab4ff;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --card: #13131f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(106,255,180,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(106,255,180,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow orb */
+    body::after {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(106,255,180,0.07) 0%, transparent 70%);
+      top: -100px; left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* HEADER */
+    header {
+      padding: 32px 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .badge {
+      font-size: 10px;
+      background: rgba(106,255,180,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(106,255,180,0.25);
+      padding: 4px 10px;
+      border-radius: 100px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 60px 0 48px;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.1s forwards;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.2s forwards;
+    }
+
+    .hero h1 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+      max-width: 480px;
+      margin: 0 auto 40px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.3s forwards;
+    }
+
+    /* MAIN CARD */
+    .main-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.4s forwards;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: var(--accent); }
+
+    .card-title {
+      margin-left: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .card-body { padding: 28px; }
+
+    /* STEP TABS */
+    .steps {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .step-btn {
+      flex: 1;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .step-btn.active {
+      background: rgba(106,255,180,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(106,255,180,0.2);
+    }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* TEXTAREA */
+    .field-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    textarea, input[type="text"], input[type="password"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      padding: 14px 16px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+      line-height: 1.6;
+    }
+
+    textarea:focus, input:focus {
+      border-color: rgba(106,255,180,0.4);
+    }
+
+    textarea { min-height: 160px; }
+
+    .field-group { margin-bottom: 20px; }
+
+    /* ANALYZE BUTTON */
+    .btn-analyze {
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      margin-top: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-analyze:hover { background: #80ffbf; transform: translateY(-1px); }
+    .btn-analyze:active { transform: translateY(0); }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* LOADING */
+    .loading-state {
+      display: none;
+      text-align: center;
+      padding: 48px 20px;
+    }
+
+    .loading-state.show { display: block; }
+
+    .loader-ring {
+      width: 48px; height: 48px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loading-text {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .loading-steps {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .loading-step {
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.3s;
+      letter-spacing: 0.5px;
+    }
+
+    .loading-step.visible { opacity: 1; color: var(--accent); }
+
+    /* RESULTS */
+    .results { display: none; }
+    .results.show { display: block; }
+
+    .score-banner {
+      background: linear-gradient(135deg, rgba(106,255,180,0.08), rgba(106,180,255,0.05));
+      border: 1px solid rgba(106,255,180,0.2);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .score-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .score-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .score-label {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .score-meta h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .score-meta p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* SECTIONS GRID */
+    .sections-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .sections-grid { grid-template-columns: 1fr; }
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .section-card.full { grid-column: 1 / -1; }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .section-icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .icon-green { background: rgba(106,255,180,0.12); }
+    .icon-red { background: rgba(255,106,106,0.12); }
+    .icon-blue { background: rgba(106,180,255,0.12); }
+    .icon-yellow { background: rgba(255,220,106,0.12); }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .item-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .item-list li {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .item-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 10px;
+    }
+
+    .item-list.red li::before { color: var(--accent2); }
+    .item-list.blue li::before { color: var(--accent3); }
+
+    /* KEYWORD CHIPS */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .chip {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      letter-spacing: 0.3px;
+    }
+
+    .chip-green { background: rgba(106,255,180,0.1); color: var(--accent); border: 1px solid rgba(106,255,180,0.2); }
+    .chip-red { background: rgba(255,106,106,0.1); color: var(--accent2); border: 1px solid rgba(255,106,106,0.2); }
+
+    /* REWRITE BOX */
+    .rewrite-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent3);
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* RESET BTN */
+    .btn-reset {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover { border-color: var(--muted); color: var(--text); }
+
+    /* API KEY SETUP */
+    .api-setup {
+      background: rgba(106,180,255,0.05);
+      border: 1px solid rgba(106,180,255,0.15);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .api-setup a { color: var(--accent3); text-decoration: none; }
+    .api-setup a:hover { text-decoration: underline; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 40px 0 32px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    footer span { color: var(--accent); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ERROR */
+    .error-box {
+      background: rgba(255,106,106,0.07);
+      border: 1px solid rgba(255,106,106,0.2);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 13px;
+      color: var(--accent2);
+      margin-top: 16px;
+      display: none;
+      line-height: 1.6;
+    }
+
+    .error-box.show { display: block; }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">Resume<span>IQ</span></div>
+      <div class="badge">✦ AI Powered</div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-tag">✦ Claude AI · Career Intelligence</div>
+      <h1>Your resume,<br /><em>brutally honest</em><br />feedback.</h1>
+      <p>Paste your resume and job description. Get an ATS score, keyword gaps, strengths, weaknesses, and a rewritten summary — powered by Claude AI.</p>
+    </section>
+
+    <div class="main-card">
+      <div class="card-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <span class="card-title">resumeiq.app — career analysis terminal</span>
+      </div>
+      <div class="card-body">
+
+        <!-- API KEY -->
+        <div class="api-setup">
+          💡 This app uses the <strong style="color:var(--text)">Claude API</strong>. Enter your API key below (it stays in your browser only).
+          Get one free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Anthropic API Key</div>
+          <input type="password" id="apiKey" placeholder="sk-ant-..." />
+        </div>
+
+        <!-- STEP TABS -->
+        <div class="steps">
+          <button class="step-btn active" onclick="switchTab('resume')">01 · Resume</button>
+          <button class="step-btn" onclick="switchTab('job')">02 · Job Description</button>
+          <button class="step-btn" onclick="switchTab('prefs')">03 · Preferences</button>
+        </div>
+
+        <!-- PANEL: RESUME -->
+        <div class="panel active" id="panel-resume">
+          <div class="field-group">
+            <div class="field-label">Paste Your Resume Text</div>
+            <textarea id="resumeText" placeholder="Paste your full resume content here — work experience, skills, education, projects..."></textarea>
+          </div>
+        </div>
+
+        <!-- PANEL: JOB -->
+        <div class="panel" id="panel-job">
+          <div class="field-group">
+            <div class="field-label">Target Job Description</div>
+            <textarea id="jobText" placeholder="Paste the job description you're applying for. The more detail, the better the analysis..."></textarea>
+          </div>
+        </div>
+
+        <!-- PANEL: PREFS -->
+        <div class="panel" id="panel-prefs">
+          <div class="field-group">
+            <div class="field-label">Your Target Role / Title</div>
+            <input type="text" id="roleText" placeholder="e.g. Senior Product Manager, ML Engineer, UX Designer" />
+          </div>
+          <div class="field-group">
+            <div class="field-label">Experience Level</div>
+            <input type="text" id="expText" placeholder="e.g. 3 years, Entry-level, Senior, Executive" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+          ✦ Analyze My Resume
+        </button>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <!-- LOADING -->
+        <div class="loading-state" id="loadingState">
+          <div class="loader-ring"></div>
+          <div class="loading-text">Claude is reviewing your resume...</div>
+          <div class="loading-steps">
+            <div class="loading-step" id="ls1">↳ Parsing resume structure</div>
+            <div class="loading-step" id="ls2">↳ Matching keywords to job description</div>
+            <div class="loading-step" id="ls3">↳ Scoring ATS compatibility</div>
+            <div class="loading-step" id="ls4">↳ Generating career insights</div>
+            <div class="loading-step" id="ls5">↳ Rewriting your summary</div>
+          </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results" id="results">
+          <div class="score-banner">
+            <div class="score-circle">
+              <div class="score-num" id="scoreNum">—</div>
+              <div class="score-label">/100</div>
+            </div>
+            <div class="score-meta">
+              <h3 id="scoreTitle">ATS Match Score</h3>
+              <p id="scoreDesc">Your resume's compatibility with the job description.</p>
+            </div>
+          </div>
+
+          <div class="sections-grid">
+            <!-- STRENGTHS -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-icon icon-green">💪</div>
+                <div class="section-title">Strengths</div>
+              </div>
+              <ul class="item-list" id="strengths"></ul>
+            </div>
+
+            <!-- WEAKNESSES -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-icon icon-red">⚠️</div>
+                <div class="section-title">Weaknesses</div>
+              </div>
+              <ul class="item-list red" id="weaknesses"></ul>
+            </div>
+
+            <!-- KEYWORDS PRESENT -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-icon icon-green">✅</div>
+                <div class="section-title">Keywords Found</div>
+              </div>
+              <div class="chips" id="keywordsFound"></div>
+            </div>
+
+            <!-- KEYWORDS MISSING -->
+            <div class="section-card">
+              <div class="section-head">
+                <div class="section-icon icon-red">❌</div>
+                <div class="section-title">Keywords Missing</div>
+              </div>
+              <div class="chips" id="keywordsMissing"></div>
+            </div>
+
+            <!-- IMPROVEMENTS -->
+            <div class="section-card full">
+              <div class="section-head">
+                <div class="section-icon icon-blue">🎯</div>
+                <div class="section-title">Top Improvements</div>
+              </div>
+              <ul class="item-list blue" id="improvements"></ul>
+            </div>
+
+            <!-- REWRITE -->
+            <div class="section-card full">
+              <div class="section-head">
+                <div class="section-icon icon-yellow">✍️</div>
+                <div class="section-title">AI-Rewritten Summary</div>
+              </div>
+              <div class="rewrite-box" id="rewrite"></div>
+            </div>
+          </div>
+
+          <button class="btn-reset" onclick="reset()">← Analyze Another Resume</button>
+        </div>
+
+      </div>
+    </div>
+
+    <footer>
+      Built with <span>Claude AI</span> · ResumeIQ · Open Source
+    </footer>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('panel-' + tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.textContent = '⚠️ ' + msg;
+      box.classList.add('show');
+    }
+
+    function hideError() {
+      document.getElementById('errorBox').classList.remove('show');
+    }
+
+    async function animateLoadingSteps() {
+      const steps = ['ls1','ls2','ls3','ls4','ls5'];
+      for (let i = 0; i < steps.length; i++) {
+        await new Promise(r => setTimeout(r, 900));
+        document.getElementById(steps[i]).classList.add('visible');
+      }
+    }
+
+    function reset() {
+      document.getElementById('results').classList.remove('show');
+      document.getElementById('loadingState').classList.remove('show');
+      document.getElementById('analyzeBtn').style.display = 'block';
+      document.querySelectorAll('.loading-step').forEach(el => el.classList.remove('visible'));
+      hideError();
+    }
+
+    async function analyze() {
+      hideError();
+
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const resume = document.getElementById('resumeText').value.trim();
+      const job = document.getElementById('jobText').value.trim();
+      const role = document.getElementById('roleText').value.trim();
+      const exp = document.getElementById('expText').value.trim();
+
+      if (!apiKey) return showError('Please enter your Anthropic API key.');
+      if (!resume) return showError('Please paste your resume in the Resume tab.');
+      if (!job) return showError('Please paste a job description in the Job Description tab.');
+
+      document.getElementById('analyzeBtn').style.display = 'none';
+      document.getElementById('results').classList.remove('show');
+      document.getElementById('loadingState').classList.add('show');
+      animateLoadingSteps();
+
+      const prompt = `You are an expert career coach and ATS (Applicant Tracking System) specialist. Analyze the resume against the job description and return ONLY a valid JSON object (no markdown, no explanation).
+
+RESUME:
+${resume}
+
+JOB DESCRIPTION:
+${job}
+
+TARGET ROLE: ${role || 'Not specified'}
+EXPERIENCE LEVEL: ${exp || 'Not specified'}
+
+Return this exact JSON structure:
+{
+  "atsScore": <number 0-100>,
+  "scoreSummary": "<1-2 sentence overall assessment>",
+  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
+  "weaknesses": ["<weakness 1>", "<weakness 2>", "<weakness 3>"],
+  "keywordsFound": ["<keyword1>", "<keyword2>", "<keyword3>", "<keyword4>", "<keyword5>"],
+  "keywordsMissing": ["<keyword1>", "<keyword2>", "<keyword3>", "<keyword4>", "<keyword5>"],
+  "improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>", "<improvement 4>"],
+  "rewrittenSummary": "<A powerful, ATS-optimized professional summary paragraph rewritten for this specific job>"
+}`;
+
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1500,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error?.message || 'API request failed.');
+        }
+
+        const data = await response.json();
+        const text = data.content[0].text.trim();
+        const clean = text.replace(/```json|```/g, '').trim();
+        const result = JSON.parse(clean);
+
+        document.getElementById('loadingState').classList.remove('show');
+        renderResults(result);
+
+      } catch (err) {
+        document.getElementById('loadingState').classList.remove('show');
+        document.getElementById('analyzeBtn').style.display = 'block';
+        document.querySelectorAll('.loading-step').forEach(el => el.classList.remove('visible'));
+        showError(err.message || 'Something went wrong. Check your API key and try again.');
+      }
+    }
+
+    function renderResults(r) {
+      // Score
+      const score = r.atsScore || 0;
+      document.getElementById('scoreNum').textContent = score;
+      document.getElementById('scoreTitle').textContent =
+        score >= 80 ? '🎯 Excellent Match' :
+        score >= 60 ? '✅ Good Match' :
+        score >= 40 ? '⚠️ Needs Work' : '❌ Low Match';
+      document.getElementById('scoreDesc').textContent = r.scoreSummary || '';
+
+      // Color score circle
+      const circle = document.querySelector('.score-circle');
+      if (score >= 80) circle.style.borderColor = 'var(--accent)';
+      else if (score >= 60) circle.style.borderColor = 'var(--accent3)';
+      else circle.style.borderColor = 'var(--accent2)';
+
+      // Lists
+      renderList('strengths', r.strengths || []);
+      renderList('weaknesses', r.weaknesses || []);
+      renderList('improvements', r.improvements || []);
+
+      // Keywords
+      renderChips('keywordsFound', r.keywordsFound || [], 'chip-green');
+      renderChips('keywordsMissing', r.keywordsMissing || [], 'chip-red');
+
+      // Rewrite
+      document.getElementById('rewrite').textContent = r.rewrittenSummary || '';
+
+      document.getElementById('results').classList.add('show');
+    }
+
+    function renderList(id, items) {
+      const el = document.getElementById(id);
+      el.innerHTML = items.map(i => `<li>${i}</li>`).join('');
+    }
+
+    function renderChips(id, items, cls) {
+      const el = document.getElementById(id);
+      el.innerHTML = items.map(i => `<span class="chip ${cls}">${i}</span>`).join('');
+    }
+  </script>
+</body>
+</html>
